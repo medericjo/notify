@@ -1,3 +1,8 @@
+import { EmailChannel } from "./providers/email/channel.js";
+import { createEmailTransport } from "./providers/email/create-email-transport.js";
+import { SmsChannel } from "./providers/sms/channel.js";
+import { createSmsTransport } from "./providers/sms/create-sms-transport.js";
+import { templates, type TemplateRegistry } from "./templates.js";
 import {
   NotificationChannel,
   NotificationProvider,
@@ -55,3 +60,24 @@ export class Notification {
     }
   }
 }
+
+export function createNotification(
+  env: NodeJS.ProcessEnv = process.env,
+  registry: TemplateRegistry = templates,
+): Notification {
+  return new Notification({
+    providers: {
+      email: new EmailChannel(() => createEmailTransport(env), registry),
+      sms: new SmsChannel(() => createSmsTransport(env), registry),
+    },
+  });
+}
+
+let defaultNotification: Notification | undefined;
+
+export const notification = {
+  send(request: NotificationRequest): Promise<NotificationResult[]> {
+    defaultNotification ??= createNotification();
+    return defaultNotification.send(request);
+  },
+};

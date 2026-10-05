@@ -14,6 +14,13 @@ export interface NotificationRequest {
   data?: Record<string, unknown>;
 }
 
+export interface EmailTemplate {
+  subject: string;
+  text: string;
+  html?: string;
+  sms?: string;
+}
+
 export interface NotificationResult {
   channel: NotificationChannel;
   success: boolean;

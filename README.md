@@ -1,44 +1,60 @@
 # notify
 
-API de notification agnostique des fournisseurs. Un appel décrit le sujet, le destinataire et les canaux ; chaque canal est confié au fournisseur configuré.
+L'envoi est déjà implémenté. L'application déclare le contenu d'un topic, puis appelle `send`. Le transport email (SMTP ou Resend) et le transport SMS (Orange Côte d'Ivoire) sont choisis par la configuration.
 
 ```ts
-import { EmailProvider, Notification, SmsProvider } from "notify";
+import { notification, registerTemplate } from "notify";
 
-const notification = new Notification({
-  providers: {
-    email: new EmailProvider({
-      send: async ({ to, topic, data }) => {
-        // Resend, SES, SendGrid, etc.
-        return { messageId: crypto.randomUUID() };
-      },
-    }),
-    sms: new SmsProvider({
-      send: async ({ to, topic, data }) => {
-        // Twilio, Vonage, etc.
-        return { messageId: crypto.randomUUID() };
-      },
-    }),
-  },
+registerTemplate("topic.test", {
+  subject: "Test {{name}}",
+  text: "Bonjour {{name}}",
 });
 
-const results = await notification.send({
-  topic: "payment.success",
-  recipient: {
-    id: user.id,
-    email: user.email,
-    phone: user.phone,
-  },
+await notification.send({
+  topic: "topic.test",
+  recipient: user,
   channels: ["email", "sms"],
-  data: {
-    amount: 2500,
-    currency: "USD",
-    paymentId: "pay_123",
-  },
 });
 ```
 
-`send` renvoie un résultat par canal. L’échec d’un canal (fournisseur absent, destinataire incomplet, erreur du transport) n’empêche pas les autres canaux de s’exécuter.
+`{{name}}`, `{{email}}`, `{{phone}}` et `{{id}}` viennent du destinataire. Les clés de `data` remplacent ces valeurs quand elles portent le même nom.
+
+Le SMS utilise le champ `sms` du template, ou `text` s'il est absent. Orange Côte d'Ivoire limite le message à 160 caractères et n'accepte que les numéros `+225` suivis de 10 chiffres.
+
+## Configuration
+
+SMTP :
+
+```bash
+EMAIL_PROVIDER=smtp
+SMTP_HOST=smtp.example.com
+SMTP_PORT=587
+SMTP_SECURE=false
+SMTP_USER=notifications@example.com
+SMTP_PASS=secret
+SMTP_FROM=notifications@example.com
+```
+
+Resend :
+
+```bash
+EMAIL_PROVIDER=resend
+RESEND_API_KEY=re_...
+EMAIL_FROM=notifications@example.com
+```
+
+Orange SMS Côte d'Ivoire :
+
+```bash
+SMS_PROVIDER=orange
+ORANGE_SMS_BASIC_AUTH=Basic ...
+ORANGE_SMS_SENDER_ADDRESS=tel:+2250000
+ORANGE_SMS_SENDER_NAME=AMANEPLUS
+```
+
+`ORANGE_SMS_BASIC_AUTH` est la valeur complète du header `Authorization` (préfixe `Basic` inclus). L'adresse et le nom d'expéditeur sont optionnels.
+
+`send` renvoie un résultat par canal. Un type sans template, une configuration absente ou une erreur du transport marque ce canal en échec.
 
 ## Développement
 
