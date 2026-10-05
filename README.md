@@ -19,7 +19,7 @@ await notification.send({
 
 `{{name}}`, `{{email}}`, `{{phone}}` et `{{id}}` viennent du destinataire. Les clés de `data` remplacent ces valeurs quand elles portent le même nom.
 
-Le SMS utilise le champ `sms` du template, ou `text` s'il est absent. Orange Côte d'Ivoire limite le message à 160 caractères et n'accepte que les numéros `+225` suivis de 10 chiffres.
+Le SMS utilise le champ `sms` du template, ou `text` s'il est absent. Orange Côte d'Ivoire n'accepte que les numéros `+225` suivis de 10 chiffres, et limite le message à 160 caractères. LeTexto accepte un numéro international, par exemple Côte d'Ivoire, Burkina Faso, Mali, Bénin, Sénégal ou Togo.
 
 ## Configuration
 
@@ -53,6 +53,18 @@ ORANGE_SMS_SENDER_NAME=AMANEPLUS
 ```
 
 `ORANGE_SMS_BASIC_AUTH` est la valeur complète du header `Authorization` (préfixe `Basic` inclus). L'adresse et le nom d'expéditeur sont optionnels.
+
+LeTexto :
+
+```bash
+SMS_PROVIDER=letexto
+LETEXTO_API_TOKEN=...
+LETEXTO_SENDER=SMS INFO
+LETEXTO_DLR_URL=https://example.com/dlr
+LETEXTO_DLR_METHOD=POST
+```
+
+`LETEXTO_DLR_URL` et `LETEXTO_DLR_METHOD` (`GET` ou `POST`) sont optionnels. Ils reçoivent le statut du message.
 
 `send` renvoie un résultat par canal. Un type sans template, une configuration absente ou une erreur du transport marque ce canal en échec.
 

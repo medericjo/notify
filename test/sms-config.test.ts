@@ -48,6 +48,35 @@ describe("readSmsConfig", () => {
     );
   });
 
+  it("lit LeTexto", () => {
+    expect(
+      readSmsConfig({
+        SMS_PROVIDER: "letexto",
+        LETEXTO_API_TOKEN: "token-1",
+        LETEXTO_SENDER: "SMS INFO",
+        LETEXTO_DLR_URL: "https://example.com/dlr",
+        LETEXTO_DLR_METHOD: "POST",
+      }),
+    ).toEqual({
+      provider: "letexto",
+      letexto: {
+        token: "token-1",
+        sender: "SMS INFO",
+        dlrUrl: "https://example.com/dlr",
+        dlrMethod: "POST",
+      },
+    });
+  });
+
+  it("signale l'absence du token LeTexto", () => {
+    expect(() =>
+      readSmsConfig({
+        SMS_PROVIDER: "letexto",
+        LETEXTO_SENDER: "SMS INFO",
+      }),
+    ).toThrow("Missing environment variable: LETEXTO_API_TOKEN");
+  });
+
   it("signale un provider inconnu", () => {
     expect(() => readSmsConfig({ SMS_PROVIDER: "twilio" })).toThrow(
       "Unknown sms provider: twilio",
